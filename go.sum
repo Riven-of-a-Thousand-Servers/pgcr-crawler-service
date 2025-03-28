@@ -1,0 +1,6 @@
+github.com/Riven-of-a-Thousand-Servers/rivenbot-commons v0.0.0-20250324223752-1902eca4e2af h1:ENMHyZIshsGxYeGfoODihXWKV2SFF4HXgBURdcyivi0=
+github.com/Riven-of-a-Thousand-Servers/rivenbot-commons v0.0.0-20250324223752-1902eca4e2af/go.mod h1:v1f20nKwY+Pr5pO4yJXLrViEBnK/UOeh7RXcmSqNICs=
+github.com/rabbitmq/amqp091-go v1.10.0 h1:STpn5XsHlHGcecLmMFCtg7mqq0RnD+zFr4uzukfVhBw=
+github.com/rabbitmq/amqp091-go v1.10.0/go.mod h1:Hy4jKW5kQART1u+JkDTF9YYOQUHXqMuhrgxOEeS7G4o=
+go.uber.org/goleak v1.3.0 h1:2K3zAYmnTNqV73imy9J1T3WC+gmCePx2hEGkimedGto=
+go.uber.org/goleak v1.3.0/go.mod h1:CoHD4mav9JJNrW/WLlf7HGZPjdw8EucARQHekz1X6bE=
