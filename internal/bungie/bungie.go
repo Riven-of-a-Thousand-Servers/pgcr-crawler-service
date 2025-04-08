@@ -22,7 +22,7 @@ type BungieClient struct {
 }
 
 var (
-	statsURI     = "https://%s/Platform/Destiny2/Stats/PostGameCarnageReport/%s/"
+	statsURI     = "http://%s/Platform/Destiny2/Stats/PostGameCarnageReport/%s/"
 	apiKeyHeader = "x-api-key"
 )
 
