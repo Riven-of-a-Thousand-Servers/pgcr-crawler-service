@@ -13,7 +13,7 @@ import (
 	"github.com/Riven-of-a-Thousand-Servers/rivenbot-commons/pkg/utils"
 )
 
-func run() {
+func run(goroutines int, period int64) {
 	log.Printf(`
 		Goroutines: %d
 		Period: %d
@@ -61,7 +61,7 @@ func run() {
 	ids := make(chan int64, 50)
 
 	for {
-		for i := 0; i <= *goroutines; i++ {
+		for i := 0; i <= goroutines; i++ {
 			waitgroup.Add(1)
 			go func(wg *sync.WaitGroup, ids chan int64) {
 				defer waitgroup.Done()
@@ -76,7 +76,7 @@ func run() {
 			}(&waitgroup, ids)
 		}
 
-		for i := 0; i < int(*period); i++ {
+		for i := 0; i < int(period); i++ {
 			ids <- int64(i)
 		}
 
