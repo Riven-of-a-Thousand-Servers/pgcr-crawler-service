@@ -14,6 +14,10 @@ import (
 )
 
 func run() {
+	log.Printf(`
+		Goroutines: %d
+		Period: %d
+		`)
 	apiKeyFile := os.Getenv("BUNGIE_API_KEY_FILE")
 	if apiKeyFile == "" {
 		log.Fatal("Bungie api key not found")
