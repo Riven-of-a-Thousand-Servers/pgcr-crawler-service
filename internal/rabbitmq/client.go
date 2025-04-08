@@ -10,7 +10,7 @@ import (
 )
 
 type PgcrPublisher interface {
-	Publish(pgcr types.PostGameCarnageReportResponse) error
+	Publish(pgcr types.PostGameCarnageReport) error
 }
 
 type Rabbitmq struct {
@@ -48,7 +48,7 @@ func NewRabbit(url, queueName string) (*Rabbitmq, error) {
 }
 
 // Publish a PGCR onto the queue for processing
-func (p *Rabbitmq) Publish(pgcr types.PostGameCarnageReportResponse) error {
+func (p *Rabbitmq) Publish(pgcr types.PostGameCarnageReport) error {
 	body, err := json.Marshal(pgcr)
 	if err != nil {
 		return fmt.Errorf("Error marshalling pgcr")
@@ -65,7 +65,7 @@ func (p *Rabbitmq) Publish(pgcr types.PostGameCarnageReportResponse) error {
 		},
 	)
 	if err != nil {
-		return fmt.Errorf("There was an error publishing PGCR [%d]: %w", pgcr.Response.ActivityDetails.ReferenceId, err)
+		return fmt.Errorf("There was an error publishing PGCR [%d]: %w", pgcr.ActivityDetails.ReferenceId, err)
 	}
 	return nil
 }

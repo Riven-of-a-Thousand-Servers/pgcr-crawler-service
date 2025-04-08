@@ -61,10 +61,7 @@ func run() {
 			waitgroup.Add(1)
 			go func(wg *sync.WaitGroup, ids chan int64) {
 				defer waitgroup.Done()
-				worker := worker.Worker{
-					BungieClient:    bungieClient,
-					RabbitPublisher: rabbitmq,
-				}
+				worker := worker.NewWorker(bungieClient, rabbitmq)
 
 				for instanceId := range ids {
 					id := instanceId
