@@ -14,10 +14,6 @@ import (
 )
 
 func run() {
-	log.Printf(`
-		Goroutines: %d
-		Period: %d
-		`, *goroutines, *period)
 	apiKeyFile := os.Getenv("BUNGIE_API_KEY_FILE")
 	if apiKeyFile == "" {
 		log.Fatal("Bungie api key not found")
@@ -71,9 +67,13 @@ func run() {
 				}
 
 				for instanceId := range ids {
-					log.Printf("Working on pgcr [%d]...", instanceId)
-					worker.Work(instanceId)
-					log.Printf("Finished pgcr [%d]", instanceId)
+					id := instanceId
+					if *pgcrStartingPoint != -1 {
+						id = *pgcrStartingPoint + instanceId
+					}
+					log.Printf("Working on pgcr [%d]...", id)
+					worker.Work(id)
+					log.Printf("Finished pgcr [%d]", id)
 				}
 			}(&waitgroup, ids)
 		}

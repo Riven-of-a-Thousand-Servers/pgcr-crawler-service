@@ -11,10 +11,10 @@ type Worker struct {
 	RabbitPublisher rabbitmq.PgcrPublisher
 }
 
-func NewWorker(bungieClient *bungie.PgcrClient, rabbitPublisher *rabbitmq.PgcrPublisher) *Worker {
+func NewWorker(bungieClient bungie.PgcrClient, rabbitPublisher rabbitmq.PgcrPublisher) *Worker {
 	return &Worker{
-		BungieClient:    *bungieClient,
-		RabbitPublisher: *rabbitPublisher,
+		BungieClient:    bungieClient,
+		RabbitPublisher: rabbitPublisher,
 	}
 }
 
