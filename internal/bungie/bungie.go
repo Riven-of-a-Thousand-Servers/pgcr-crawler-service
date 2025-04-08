@@ -71,5 +71,7 @@ func (p *BungieClient) FetchPgcr(instanceId int64) (*types.PostGameCarnageReport
 	if err := json.Unmarshal(body, &pgcr); err != nil {
 		return nil, fmt.Errorf("Error unmarshalling JSON response for PGCR [%d]: %v", instanceId, err)
 	}
+
+	log.Printf("Successfuly response from Bungie for pgcr [%d]: %#v", instanceId, pgcr)
 	return &pgcr, nil
 }

@@ -71,7 +71,7 @@ func run() {
 
 	var waitgroup sync.WaitGroup
 
-	for {
+	for i := 0; i < *passes; i++ {
 		ids := make(chan int64, 50)
 		for i := 0; i <= *goroutines; i++ {
 			waitgroup.Add(1)
