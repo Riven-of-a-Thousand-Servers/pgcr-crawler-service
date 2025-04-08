@@ -11,6 +11,7 @@ import (
 	"sync"
 
 	"github.com/Riven-of-a-Thousand-Servers/rivenbot-commons/pkg/utils"
+	"github.com/rabbitmq/amqp091-go"
 )
 
 func run() {
@@ -46,17 +47,32 @@ func run() {
 
 	rabbitmqUrl, err := utils.ReadSecret(rabbitmqPath)
 	if err != nil {
-		log.Fatal("Error reading rabbitmq url from path: %s", rabbitmqUrl)
+		log.Fatalf("Error reading rabbitmq url from path [%s]: %v", rabbitmqUrl, err)
 	}
-	rabbitmq, err := rabbitmq.NewRabbit(rabbitmqUrl, "pgcr")
+
+	conn, err := amqp091.Dial(rabbitmqUrl)
+	if err != nil {
+		log.Fatalf("Error connecting to rabbitmq: %v", err)
+	}
+
+	defer conn.Close()
+
+	channel, err := conn.Channel()
+	if err != nil {
+		log.Fatalf("Error opening up channel: %v", err)
+	}
+
+	defer channel.Close()
+
+	rabbitmq, err := rabbitmq.NewRabbit(rabbitmqUrl, "pgcr", channel)
 	if err != nil {
 		log.Fatalf("Unable to instantiate rabbitmq: %w", err)
 	}
 
 	var waitgroup sync.WaitGroup
-	ids := make(chan int64, 50)
 
 	for {
+		ids := make(chan int64, 50)
 		for i := 0; i <= *goroutines; i++ {
 			waitgroup.Add(1)
 			go func(wg *sync.WaitGroup, ids chan int64) {

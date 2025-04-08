@@ -27,7 +27,6 @@ func run() {
 		}
 		close(ids)
 		wg.Wait()
-		log.Printf("Finished pass [%d/%d]...\n", i, *passes)
 	}
 
 	log.Println("All workers have finished processing")
