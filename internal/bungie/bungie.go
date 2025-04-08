@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 
 	types "github.com/Riven-of-a-Thousand-Servers/rivenbot-commons/pkg/types"
@@ -44,7 +45,8 @@ func NewBungieClient(apiKey, host string) (*BungieClient, error) {
 
 func (p *BungieClient) FetchPgcr(instanceId int64) (*types.PostGameCarnageReportResponse, error) {
 	request, err := http.NewRequest("GET", fmt.Sprintf(statsURI, p.Host, instanceId), nil)
-	request.Header.Add(apiKeyHeader, p.ApiKey)
+	log.Printf("BungieClient: %#v", p)
+	request.Header.Set(apiKeyHeader, p.ApiKey)
 
 	response, err := p.Client.Do(request)
 	if err != nil {
