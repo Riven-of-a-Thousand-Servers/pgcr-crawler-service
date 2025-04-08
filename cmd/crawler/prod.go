@@ -13,11 +13,11 @@ import (
 	"github.com/Riven-of-a-Thousand-Servers/rivenbot-commons/pkg/utils"
 )
 
-func run(goroutines int, period int64) {
+func run() {
 	log.Printf(`
 		Goroutines: %d
 		Period: %d
-		`)
+		`, *goroutines, *period)
 	apiKeyFile := os.Getenv("BUNGIE_API_KEY_FILE")
 	if apiKeyFile == "" {
 		log.Fatal("Bungie api key not found")
@@ -61,7 +61,7 @@ func run(goroutines int, period int64) {
 	ids := make(chan int64, 50)
 
 	for {
-		for i := 0; i <= goroutines; i++ {
+		for i := 0; i <= *goroutines; i++ {
 			waitgroup.Add(1)
 			go func(wg *sync.WaitGroup, ids chan int64) {
 				defer waitgroup.Done()
@@ -76,7 +76,7 @@ func run(goroutines int, period int64) {
 			}(&waitgroup, ids)
 		}
 
-		for i := 0; i < int(period); i++ {
+		for i := 0; i < int(*period); i++ {
 			ids <- int64(i)
 		}
 

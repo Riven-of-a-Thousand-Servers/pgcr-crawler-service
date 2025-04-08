@@ -28,5 +28,5 @@ func prepareWorkers(wg *sync.WaitGroup, ids chan int64) {
 
 func main() {
 	flag.Parse()
-	run(*goroutines, *period)
+	run()
 }
