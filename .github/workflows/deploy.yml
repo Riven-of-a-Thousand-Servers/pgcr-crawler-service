@@ -1,0 +1,61 @@
+name: Deploy pgcr-crawler-service
+on:
+  workflow_dispatch:
+    inputs:
+      service-version:
+        description: 'Version of the service to deploy'
+        required: true
+        default: 'latest'
+  create:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.determine_version.outputs.version }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-tags: true
+
+      - name: Determine version
+        id: determine_version
+        run: |
+          if [ "${GITHUB_EVENT_NAME}" == "create" ] && [ -n "${GITHUB_REF}" ]; then
+            # The event was triggered by a tag, so extract the version from the tag
+            VERSION=${GITHUB_REF#refs/tags/v}  # Remove the 'v' prefix from the tag
+          else
+            # The event was triggered by workflow_dispatch, so use the input version
+            VERSION="${{ github.event.inputs['service-version'] }}"
+          fi
+          echo "VERSION=${VERSION}" >> $GITHUB_ENV
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build & Push Docker Image
+        uses: docker/build-push-action@v3 
+        with:
+          platforms: linux/amd64
+          context: .
+          push: true
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/pgcr-crawler-service:${{ env.VERSION }}
+            ${{ secrets.DOCKER_USERNAME }}/pgcr-crawler-service:latest
+  deploy:
+    needs: build-and-push 
+    uses: Riven-of-a-Thousand-Servers/rivenbot-deployments/.github/workflows/stack-deploy.yml@main
+    with:
+      proxy-service-version: ${{ needs.build-and-push.outputs.version }}
+    secrets:
+      TOKEN: ${{ secrets.DEPLOYMENT_PAT }}

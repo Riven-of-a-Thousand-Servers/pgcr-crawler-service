@@ -3,13 +3,14 @@
 package main
 
 import (
-	"github.com/Riven-of-a-Thousand-Servers/rivenbot-commons/pkg/utils"
 	"log"
-	"net/http"
 	"os"
 	"pgcr-crawler-service/internal/bungie"
 	"pgcr-crawler-service/internal/rabbitmq"
 	"pgcr-crawler-service/internal/worker"
+	"sync"
+
+	"github.com/Riven-of-a-Thousand-Servers/rivenbot-commons/pkg/utils"
 )
 
 func run() {
@@ -33,35 +34,49 @@ func run() {
 		log.Fatalf("Unable to fetch secret with path [%s]", hostPath)
 	}
 
-	httpClient := &http.Client{}
-
-	bungieClient := &bungie.PgcrClient{
-		Client: httpClient,
-		Host:   host,
-		ApiKey: apiKey,
-	}
-
-	conn, err := rabbitmq.Connect()
+	bungieClient, err := bungie.NewBungieClient(apiKey, host)
 	if err != nil {
-		log.Fatalf("%v", err)
+		log.Fatalf("Unable to instantiate a bungie client: %w", err)
 	}
 
-	defer conn.Close()
-	channel, queue, err := rabbitmq.Setup(conn, "pgcr-crawler-service")
+	rabbitmqPath := os.Getenv("RABBITMQ_URL_FILE")
+	if rabbitmqPath == "" {
+		log.Fatal("Rabbitmq url not found")
+	}
+
+	rabbitmqUrl, err := utils.ReadSecret(rabbitmqPath)
 	if err != nil {
-		log.Fatalf("%v", err)
+		log.Fatal("Error reading rabbitmq url from path: %s", rabbitmqUrl)
+	}
+	rabbitmq, err := rabbitmq.NewRabbit(rabbitmqUrl, "pgcr")
+	if err != nil {
+		log.Fatalf("Unable to instantiate rabbitmq: %w", err)
 	}
 
-	rabbitPublisher := &rabbitmq.PgcrPublisher{
-		Channel: channel,
-		Queue:   queue,
+	var waitgroup sync.WaitGroup
+	ids := make(chan int64, 50)
+
+	for {
+		for i := 0; i <= *goroutines; i++ {
+			waitgroup.Add(1)
+			go func(wg *sync.WaitGroup, ids chan int64) {
+				defer waitgroup.Done()
+				worker := worker.Worker{
+					BungieClient:    bungieClient,
+					RabbitPublisher: rabbitmq,
+				}
+
+				for instanceId := range ids {
+					worker.Work(instanceId)
+				}
+			}(&waitgroup, ids)
+		}
+
+		for i := 0; i < int(*period); i++ {
+			ids <- int64(i)
+		}
+
+		close(ids)
+		waitgroup.Wait()
 	}
-
-	worker := worker.Worker{
-		BungieClient:    bungieClient,
-		RabbitPublisher: rabbitPublisher,
-	}
-
-	worker.Work(1)
-
 }

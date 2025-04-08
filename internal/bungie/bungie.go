@@ -2,6 +2,7 @@ package bungie
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -9,11 +10,11 @@ import (
 	types "github.com/Riven-of-a-Thousand-Servers/rivenbot-commons/pkg/types"
 )
 
-type BungieClient interface {
+type PgcrClient interface {
 	FetchPgcr(instanceId int64) (*types.PostGameCarnageReportResponse, error)
 }
 
-type PgcrClient struct {
+type BungieClient struct {
 	Client *http.Client
 	ApiKey string
 	Host   string
@@ -24,7 +25,24 @@ var (
 	apiKeyHeader = "x-api-key"
 )
 
-func (p *PgcrClient) FetchPgcr(instanceId int64) (*types.PostGameCarnageReportResponse, error) {
+func NewBungieClient(apiKey, host string) (*BungieClient, error) {
+	if apiKey == "" {
+		return nil, errors.New("Api key is empty")
+	}
+
+	if host == "" {
+		return nil, errors.New("Host is empty")
+	}
+
+	client := http.Client{}
+	return &BungieClient{
+		Client: &client,
+		ApiKey: apiKey,
+		Host:   host,
+	}, nil
+}
+
+func (p *BungieClient) FetchPgcr(instanceId int64) (*types.PostGameCarnageReportResponse, error) {
 	request, err := http.NewRequest("GET", fmt.Sprintf(statsURI, p.Host, instanceId), nil)
 	request.Header.Add(apiKeyHeader, p.ApiKey)
 

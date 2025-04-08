@@ -1,15 +1,32 @@
 package worker
 
 import (
+	"fmt"
 	"pgcr-crawler-service/internal/bungie"
 	"pgcr-crawler-service/internal/rabbitmq"
 )
 
 type Worker struct {
-	BungieClient    bungie.BungieClient
-	RabbitPublisher rabbitmq.RabbitPublisher
+	BungieClient    bungie.PgcrClient
+	RabbitPublisher rabbitmq.PgcrPublisher
 }
 
-func (w Worker) Work(instanceId int64) {
-	return
+func NewWorker(bungieClient *bungie.PgcrClient, rabbitPublisher *rabbitmq.PgcrPublisher) *Worker {
+	return &Worker{
+		BungieClient:    *bungieClient,
+		RabbitPublisher: *rabbitPublisher,
+	}
+}
+
+func (w *Worker) Work(instanceId int64) error {
+	pgcr, err := w.BungieClient.FetchPgcr(instanceId)
+	if err != nil {
+		return fmt.Errorf("Error fetching instanceId [%d] from Bungie", instanceId)
+	}
+
+	err = w.RabbitPublisher.Publish(pgcr.Response)
+	if err != nil {
+		return fmt.Errorf("Error publishing instanceId [%d] to RabbitMQ", instanceId)
+	}
+	return nil
 }

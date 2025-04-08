@@ -9,48 +9,23 @@ import (
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
-type RabbitPublisher interface {
+type PgcrPublisher interface {
 	Publish(pgcr types.PostGameCarnageReport) error
 }
 
-type PgcrPublisher struct {
+type Rabbitmq struct {
 	Channel *amqp.Channel
 	Queue   *amqp.Queue
 }
 
-// Publish a PGCR onto the queue for processing
-func (p *PgcrPublisher) Publish(pgcr types.PostGameCarnageReport) error {
-	body, err := json.Marshal(pgcr)
+func NewRabbit(url, queueName string) (*Rabbitmq, error) {
+	conn, err := amqp.Dial(url)
 	if err != nil {
-		return fmt.Errorf("Error marshalling pgcr")
+		return nil, fmt.Errorf("Error connecting to RabbitMQ: %w", err)
 	}
-
-	p.Channel.Publish(
-		"",
-		p.Queue.Name,
-		false,
-		false,
-		amqp.Publishing{
-			ContentType: "application/json",
-			Body:        body,
-		},
-	)
-	return nil
-}
-
-func Connect() (*amqp.Connection, error) {
-	connectionUrl := "amqp://localhost:5672"
-	conn, err := amqp.Dial(connectionUrl)
+	channel, err := conn.Channel()
 	if err != nil {
-		return nil, fmt.Errorf("Error opening up connection with url [%s]", connectionUrl)
-	}
-	return conn, nil
-}
-
-func Setup(connection *amqp.Connection, queueName string) (*amqp.Channel, *amqp.Queue, error) {
-	channel, err := connection.Channel()
-	if err != nil {
-		return nil, nil, errors.New("Error opening a channel")
+		return nil, errors.New("Error opening a channel")
 	}
 
 	queue, err := channel.QueueDeclare(
@@ -63,8 +38,34 @@ func Setup(connection *amqp.Connection, queueName string) (*amqp.Channel, *amqp.
 	)
 
 	if err != nil {
-		return nil, nil, fmt.Errorf("Unable to declare a queue with name [%s]", queueName)
+		return nil, fmt.Errorf("Unable to declare a queue with name [%s]", queueName)
 	}
 
-	return channel, &queue, nil
+	return &Rabbitmq{
+		Channel: channel,
+		Queue:   &queue,
+	}, nil
+}
+
+// Publish a PGCR onto the queue for processing
+func (p *Rabbitmq) Publish(pgcr types.PostGameCarnageReport) error {
+	body, err := json.Marshal(pgcr)
+	if err != nil {
+		return fmt.Errorf("Error marshalling pgcr")
+	}
+
+	err = p.Channel.Publish(
+		"",
+		p.Queue.Name,
+		false,
+		false,
+		amqp.Publishing{
+			ContentType: "application/json",
+			Body:        body,
+		},
+	)
+	if err != nil {
+		return fmt.Errorf("There was an error publishing PGCR [%d]: %w", pgcr.ActivityDetails.ReferenceId, err)
+	}
+	return nil
 }
