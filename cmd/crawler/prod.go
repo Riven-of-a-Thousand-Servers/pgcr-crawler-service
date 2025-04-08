@@ -85,7 +85,10 @@ func run() {
 						id = *pgcrStartingPoint + instanceId
 					}
 					log.Printf("Working on pgcr [%d]...", id)
-					worker.Work(id)
+					err := worker.Work(id)
+					if err != nil {
+						log.Fatalf("Received error for pgcr [%d]: %w", id, err)
+					}
 					log.Printf("Finished pgcr [%d]", id)
 				}
 			}(&waitgroup, ids)
