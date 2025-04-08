@@ -21,12 +21,12 @@ func NewWorker(bungieClient bungie.PgcrClient, rabbitPublisher rabbitmq.PgcrPubl
 func (w *Worker) Work(instanceId int64) error {
 	pgcr, err := w.BungieClient.FetchPgcr(instanceId)
 	if err != nil {
-		return fmt.Errorf("Error fetching instanceId [%d] from Bungie", instanceId)
+		return fmt.Errorf("Error fetching instanceId [%d] from Bungie: %v", instanceId, err)
 	}
 
 	err = w.RabbitPublisher.Publish(pgcr.Response)
 	if err != nil {
-		return fmt.Errorf("Error publishing instanceId [%d] to RabbitMQ", instanceId)
+		return fmt.Errorf("Error publishing instanceId [%d] to RabbitMQ: %v", instanceId, err)
 	}
 	return nil
 }
