@@ -71,7 +71,9 @@ func run() {
 				}
 
 				for instanceId := range ids {
+					log.Printf("Working on pgcr [%d]...", instanceId)
 					worker.Work(instanceId)
+					log.Printf("Finished pgcr [%d]", instanceId)
 				}
 			}(&waitgroup, ids)
 		}
