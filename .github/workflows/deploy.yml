@@ -56,6 +56,6 @@ jobs:
     needs: build-and-push 
     uses: Riven-of-a-Thousand-Servers/rivenbot-deployments/.github/workflows/stack-deploy.yml@main
     with:
-      proxy-service-version: ${{ needs.build-and-push.outputs.version }}
+      pgcr-crawler-service-version: ${{ needs.build-and-push.outputs.version }}
     secrets:
       TOKEN: ${{ secrets.DEPLOYMENT_PAT }}
