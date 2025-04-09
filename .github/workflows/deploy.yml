@@ -59,4 +59,6 @@ jobs:
     with:
       pgcr-crawler-service-version: ${{ needs.build-and-push.outputs.version }}
     secrets:
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }} 
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
       TOKEN: ${{ secrets.DEPLOYMENT_PAT }}
