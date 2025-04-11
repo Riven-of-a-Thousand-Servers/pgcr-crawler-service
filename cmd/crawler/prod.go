@@ -87,7 +87,7 @@ func run() {
 					log.Printf("Working on pgcr [%d]...", id)
 					err := worker.Work(id)
 					if err != nil {
-						log.Fatalf("Received error for pgcr [%d]: %w", id, err)
+						log.Printf("Received error for pgcr [%d]: %w", id, err)
 					}
 					log.Printf("Finished pgcr [%d]", id)
 				}
