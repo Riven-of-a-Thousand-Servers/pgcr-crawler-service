@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"log"
+	"os"
 	"sync"
 )
 
@@ -29,4 +30,5 @@ func prepareWorkers(wg *sync.WaitGroup, ids chan int64) {
 func main() {
 	flag.Parse()
 	run()
+	os.Exit(0)
 }

@@ -22,7 +22,7 @@ func run() {
 
 	apiKey, err := utils.ReadSecret(apiKeyFile)
 	if err != nil {
-		log.Fatalf("Error reading secret from file path [%s]", apiKeyFile)
+		log.Fatalf("Error reading secret from file path [%s]: %v", apiKeyFile, err)
 	}
 
 	hostPath := os.Getenv("BUNGIE_HOST_FILE")
@@ -32,12 +32,12 @@ func run() {
 
 	host, err := utils.ReadSecret(hostPath)
 	if err != nil {
-		log.Fatalf("Unable to fetch secret with path [%s]", hostPath)
+		log.Fatalf("Unable to fetch secret with path [%s]: %v", hostPath, err)
 	}
 
 	bungieClient, err := bungie.NewBungieClient(apiKey, host)
 	if err != nil {
-		log.Fatalf("Unable to instantiate a bungie client: %w", err)
+		log.Fatalf("Unable to instantiate a bungie client: %v", err)
 	}
 
 	rabbitmqPath := os.Getenv("RABBITMQ_URL_FILE")
@@ -66,7 +66,7 @@ func run() {
 
 	rabbitmq, err := rabbitmq.NewRabbit(rabbitmqUrl, "pgcr", channel)
 	if err != nil {
-		log.Fatalf("Unable to instantiate rabbitmq: %w", err)
+		log.Fatalf("Unable to instantiate rabbitmq: %v", err)
 	}
 
 	var waitgroup sync.WaitGroup
