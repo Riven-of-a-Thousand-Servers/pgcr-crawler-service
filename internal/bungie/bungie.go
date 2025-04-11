@@ -45,12 +45,10 @@ func NewBungieClient(apiKey, host string) (*BungieClient, error) {
 
 func (p *BungieClient) FetchPgcr(instanceId int64) (*types.PostGameCarnageReportResponse, error) {
 	uri := fmt.Sprintf(statsURI, p.Host, instanceId)
-	log.Printf("URI: %s", uri)
 	request, err := http.NewRequest("GET", uri, nil)
 	if err != nil {
 		return nil, fmt.Errorf("Error creating request for pgcr [%d]: %v", instanceId, err)
 	}
-	log.Printf("BungieClient: %#v", p)
 	request.Header.Set(apiKeyHeader, p.ApiKey)
 
 	response, err := p.Client.Do(request)
@@ -59,7 +57,7 @@ func (p *BungieClient) FetchPgcr(instanceId int64) (*types.PostGameCarnageReport
 	}
 
 	if response.StatusCode > 299 {
-		return nil, fmt.Errorf("Response for PGCR [%d] returned an error response: [%s]", instanceId, response.Status)
+		return nil, fmt.Errorf("Response for PGCR [%d] returned an error response: [%v]", instanceId, response)
 	}
 
 	defer response.Body.Close()
