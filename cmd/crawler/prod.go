@@ -65,7 +65,7 @@ func crawl(bungieClient bungie.PgcrClient, rabbitmq rabbitmq.PgcrPublisher, prox
 	waitForHealthyProxy(proxyHost)
 	var waitgroup sync.WaitGroup
 	for i := 0; i < *passes; i++ {
-		ids := make(chan int64, 50)
+		ids := make(chan int64, 5)
 		for i := 0; i <= *goroutines; i++ {
 			waitgroup.Add(1)
 			go func(ids chan int64) {
